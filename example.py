@@ -13,9 +13,13 @@ NORMAL = "N"
 VENTRICULAR = "V"
 SUPER_VENTRICULAR = "S"
 
+'''
+Small example script to train a model
+'''
+
 if __name__ == '__main__':
     # Get the generators
-    training_generator, validation_generator = get_generators("../dataset.csv")
+    training_generator, validation_generator = get_generators("dataset.csv")
     model = get_model()
 
     # Compile model
