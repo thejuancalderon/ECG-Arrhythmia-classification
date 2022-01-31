@@ -49,6 +49,6 @@ if __name__ == '__main__':
     es_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy',patience=10)  # The first run was with val loss
 
     # Train the model
-    model.fit_generator(generator=training_generator, validation_data=validation_generator, epbochs=100,
+    model.fit_generator(generator=training_generator, validation_data=validation_generator, epochs=100,
                         callbacks=[es_callback, tb_callback, ck_callback])
 
