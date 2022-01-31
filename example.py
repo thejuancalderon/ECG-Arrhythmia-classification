@@ -18,6 +18,15 @@ Small example script to train a model
 '''
 
 if __name__ == '__main__':
+    import gdown
+    import os
+
+    id = '1r8gX-S3u39IJyPV0y1-pUiykOnJeijug'
+    output = 'dataset.csv'
+
+    #% Check if dataset is in the folder otherwise downloads it
+    if not os.path.isfile("dataset.csv"):
+        gdown.download(id=id, output=output, quiet=False)
     # Get the generators
     training_generator, validation_generator = get_generators("dataset.csv")
     model = get_model()
