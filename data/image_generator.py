@@ -73,6 +73,7 @@ def create_MTF_images(data: pd.DataFrame = None, image_size=32, n_bins=3):
 def get_generators(file='dataset.csv', batch_size=512, test_size=0.2, seed=12,
                    undersampling_cardinality=100000,
                    oversampling_cardinality=100000,
+                   input_size=(32,32,3)
                    ):
     df = pd.read_csv(file)
     df = df.iloc[:, 1:]
@@ -89,7 +90,7 @@ def get_generators(file='dataset.csv', batch_size=512, test_size=0.2, seed=12,
 
     Xtrain, Xtest, ytrain, ytest = train_test_split(X_res, y_res, test_size=test_size, random_state=seed)
 
-    generator = ECGImageGenerator(X=Xtrain, y=ytrain, batch_size=batch_size)
+    generator = ECGImageGenerator(X=Xtrain, y=ytrain, batch_size=batch_size, input_size=input_size)
     validation_generator = ECGImageGenerator(X=Xtest, y=ytest, batch_size=batch_size)
 
     return generator, validation_generator
