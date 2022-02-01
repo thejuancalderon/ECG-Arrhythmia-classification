@@ -35,7 +35,7 @@ if __name__ == '__main__':
     model.compile(loss=tf.keras.losses.CategoricalCrossentropy(),
                   optimizer=tf.keras.optimizers.Adam(learning_rate=3e-4), metrics='accuracy')
     # Callbacks
-    checkpoint_filepath = 'drive/MyDrive/tensorboard.{epoch:02d}-{val_loss:.2f}'
+    checkpoint_filepath = 'drive/MyDrive/checkpoints/check.{epoch:02d}-{val_loss:.2f}'
     ck_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=checkpoint_filepath,
         save_weights_only=True,
