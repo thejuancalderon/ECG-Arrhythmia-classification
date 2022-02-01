@@ -33,9 +33,9 @@ class ECGImageGenerator(tf.keras.utils.Sequence):
         current_X = self.X.iloc[index * self.batch_size:(index + 1) * self.batch_size, ]
         current_y = self.y.iloc[index * self.batch_size:(index + 1) * self.batch_size, ]
         # Create images using transformations
-        gaf = create_GAF_images(current_X)
-        mtf = create_MTF_images(current_X)
-        rp = create_RP_images(current_X)
+        gaf = create_GAF_images(current_X, image_size=self.input_size[0])
+        mtf = create_MTF_images(current_X, image_size=self.input_size[0])
+        rp = create_RP_images(current_X, image_size=self.input_size[0])
         gaf = np.expand_dims(gaf, axis=-1)
         mtf = np.expand_dims(mtf, axis=-1)
         rp = np.expand_dims(rp, axis=-1)
@@ -57,7 +57,8 @@ def create_GAF_images(data: pd.DataFrame = None, image_size=32):
     return images
 
 
-def create_RP_images(data: pd.DataFrame = None, dimension=0.55):
+def create_RP_images(data: pd.DataFrame = None, image_size=32):
+    dimension = 1 - (float(image_size) / len(data.columns))
     rp = RecurrencePlot(dimension=dimension)
     images = rp.transform(data)
     return images
@@ -69,7 +70,10 @@ def create_MTF_images(data: pd.DataFrame = None, image_size=32, n_bins=3):
     return images
 
 
-def get_generators(file='dataset.csv'):
+def get_generators(file='dataset.csv', batch_size=512, test_size=0.2, seed=12,
+                   undersampling_cardinality=100000,
+                   oversampling_cardinality=100000,
+                   ):
     df = pd.read_csv(file)
     df = df.iloc[:, 1:]
     df = df.rename(columns={"0.1": LABEL})
@@ -78,14 +82,14 @@ def get_generators(file='dataset.csv'):
     y = df.iloc[:, -1]
 
     # Under and oversampling to balance the unbalanced dataset
-    under = RandomUnderSampler(sampling_strategy={NORMAL: 100000})
+    under = RandomUnderSampler(sampling_strategy={NORMAL: undersampling_cardinality})
     X_res, y_res = under.fit_resample(X, y)
-    smote = SMOTE(sampling_strategy={VENTRICULAR: 100000, SUPER_VENTRICULAR: 100000})
+    smote = SMOTE(sampling_strategy={VENTRICULAR: oversampling_cardinality, SUPER_VENTRICULAR: oversampling_cardinality})
     X_res, y_res = smote.fit_resample(X_res, y_res)
 
-    Xtrain, Xtest, ytrain, ytest = train_test_split(X_res, y_res, test_size=0.20, random_state=12)
+    Xtrain, Xtest, ytrain, ytest = train_test_split(X_res, y_res, test_size=test_size, random_state=seed)
 
-    generator = ECGImageGenerator(X=Xtrain, y=ytrain, batch_size=512)
-    validation_generator = ECGImageGenerator(X=Xtest, y=ytest, batch_size=512)
+    generator = ECGImageGenerator(X=Xtrain, y=ytrain, batch_size=batch_size)
+    validation_generator = ECGImageGenerator(X=Xtest, y=ytest, batch_size=batch_size)
 
     return generator, validation_generator

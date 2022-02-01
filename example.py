@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 import tensorflow as tf
 from data.image_generator import get_generators
-from model.mobileNet import get_model
+from model.mobileNet import get_model_mobile_net_v2
 
 LABEL = "label"
 NORMAL = "N"
@@ -29,7 +29,7 @@ if __name__ == '__main__':
         gdown.download(id=id, output=output, quiet=False)
     # Get the generators
     training_generator, validation_generator = get_generators("dataset.csv")
-    model = get_model()
+    model = get_model_mobile_net_v2()
 
     # Compile model
     model.compile(loss=tf.keras.losses.CategoricalCrossentropy(),
