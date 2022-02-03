@@ -22,6 +22,8 @@ class MNET2():
 
         return model
 
+
+
 '''
 Add more classes to create different model architectures. You will
 use command line with the name of the class

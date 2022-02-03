@@ -7,6 +7,8 @@ import tensorflow as tf
 from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import SMOTE
 from sklearn.model_selection import train_test_split
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+
 
 LABEL = "label"
 NORMAL = "N"
@@ -43,6 +45,7 @@ class ECGImageGenerator(tf.keras.utils.Sequence):
         # One hot encoding of the target
         current_y = self.one_hot_encoder.transform(np.array(current_y).reshape(-1, 1))
         image = np.concatenate([gaf, mtf, rp], axis=-1)
+        image = preprocess_input(image)
 
         # Returns standard X,y
         return (image, current_y)
@@ -87,9 +90,12 @@ def get_generators(file='dataset.csv', batch_size=512, test_size=0.2, seed=12,
     # Under and oversampling to balance the unbalanced dataset
     under = RandomUnderSampler(sampling_strategy={NORMAL: undersampling_cardinality})
     X_res, y_res = under.fit_resample(Xtrain, ytrain)
+
+    '''
     smote = SMOTE(
         sampling_strategy={VENTRICULAR: oversampling_cardinality, SUPER_VENTRICULAR: oversampling_cardinality})
     X_res, y_res = smote.fit_resample(X_res, y_res)
+    '''
 
     print(X_res.shape)
 

@@ -56,7 +56,7 @@ if __name__ == '__main__':
     # Callbacks ckpt
     ckpt_path = str(datetime.datetime.now())
     os.makedirs('experiments/' + ckpt_path)
-    checkpoint_filepath = 'experiments/' + ckpt_path + '/check.{epoch:02d}-{val_loss:.2f}'
+    checkpoint_filepath = 'experiments/' + ckpt_path + '/check.{epoch:02d}-{val_loss:.2f}.ckpt'
     ck_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=checkpoint_filepath,
         save_weights_only=True,
@@ -67,9 +67,11 @@ if __name__ == '__main__':
     tb_filepath = "drive/MyDrive/tensorboard"
     tb_callback = tf.keras.callbacks.TensorBoard(tb_filepath, update_freq=1)
 
-    es_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy',patience=10)  # The first run was with val loss
+    es_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy',patience=50)  # The first run was with val loss
 
     # Train the model
     model.fit(x=training_generator, validation_data=validation_generator, epochs=100,
                         callbacks=[es_callback, ck_callback])
+
+
 
