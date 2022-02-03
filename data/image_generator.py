@@ -23,13 +23,14 @@ class ECGImageGenerator(tf.keras.utils.Sequence):
     y: (n_samples,)
     '''
 
-    def __init__(self, batch_size=512, input_size=(32, 32, 3), shuffle=True, X=None, y=None):
+    def __init__(self, batch_size=512, input_size=(32, 32, 3), shuffle=True, X=None, y=None, oneHotEncoder=None):
         self.X = X.copy()
         self.y = y.copy()
         self.batch_size = batch_size
         self.input_size = input_size
-        self.one_hot_encoder = OneHotEncoder(sparse=False)
-        self.one_hot_encoder.fit(np.array(self.y).reshape(-1, 1))
+        self.one_hot_encoder = oneHotEncoder
+        #self.one_hot_encoder = OneHotEncoder(sparse=False)
+        #self.one_hot_encoder.fit(np.array(self.y).reshape(-1, 1))
 
     def __getitem__(self, index):
         current_X = self.X.iloc[index * self.batch_size:(index + 1) * self.batch_size, ]
@@ -45,7 +46,7 @@ class ECGImageGenerator(tf.keras.utils.Sequence):
         # One hot encoding of the target
         current_y = self.one_hot_encoder.transform(np.array(current_y).reshape(-1, 1))
         image = np.concatenate([gaf, mtf, rp], axis=-1)
-        image = preprocess_input(image)
+        #image = preprocess_input(image)
 
         # Returns standard X,y
         return (image, current_y)
@@ -96,10 +97,12 @@ def get_generators(file='dataset.csv', batch_size=512, test_size=0.2, seed=12,
         sampling_strategy={VENTRICULAR: oversampling_cardinality, SUPER_VENTRICULAR: oversampling_cardinality})
     X_res, y_res = smote.fit_resample(X_res, y_res)
     '''
+    one_hot_encoder = OneHotEncoder(sparse=False)
+    one_hot_encoder.fit(np.array(y).reshape(-1, 1))
 
     print(X_res.shape)
 
-    generator = ECGImageGenerator(X=X_res, y=y_res, batch_size=batch_size, input_size=input_size)
-    validation_generator = ECGImageGenerator(X=Xtest, y=ytest, batch_size=batch_size, input_size=input_size)
+    generator = ECGImageGenerator(X=X_res, y=y_res, batch_size=batch_size, input_size=input_size, oneHotEncoder=one_hot_encoder)
+    validation_generator = ECGImageGenerator(X=Xtest, y=ytest, batch_size=batch_size, input_size=input_size, oneHotEncoder=one_hot_encoder)
 
     return generator, validation_generator
