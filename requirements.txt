@@ -3,3 +3,4 @@ pandas==1.3.5
 matplotlib==3.5.1
 pyts==0.12.0
 gdown
+wandb
