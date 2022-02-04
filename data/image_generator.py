@@ -92,11 +92,11 @@ def get_generators(file='dataset.csv', batch_size=512, test_size=0.2, seed=12,
     under = RandomUnderSampler(sampling_strategy={NORMAL: undersampling_cardinality})
     X_res, y_res = under.fit_resample(Xtrain, ytrain)
 
-    '''
-    smote = SMOTE(
-        sampling_strategy={VENTRICULAR: oversampling_cardinality, SUPER_VENTRICULAR: oversampling_cardinality})
-    X_res, y_res = smote.fit_resample(X_res, y_res)
-    '''
+    if(oversampling_cardinality>-1):
+        smote = SMOTE(
+            sampling_strategy={VENTRICULAR: oversampling_cardinality, SUPER_VENTRICULAR: oversampling_cardinality})
+        X_res, y_res = smote.fit_resample(X_res, y_res)
+
     one_hot_encoder = OneHotEncoder(sparse=False)
     one_hot_encoder.fit(np.array(y).reshape(-1, 1))
 
