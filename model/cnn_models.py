@@ -27,7 +27,7 @@ class MNET2():
 class SimpleNet():
     def get_model(self,input_shape=(32,32,1), numbers_layers_to_freeze=145):
         start_filter = 16
-        input = Input(shape=(32, 32, 3))
+        input = Input(shape=input_shape)
         layer = Conv2D(filters=start_filter, padding='same', kernel_size=(3, 3), activation='relu')(input)
         layer = MaxPool2D(pool_size=(2, 2))(layer)
         start_filter *= 2
@@ -60,7 +60,7 @@ class ResNetStep():
         start_f = 32
 
         # Define model input
-        input = Input(shape=[32, 32, 3])
+        input = Input(shape=input_shape)
 
         # Features extraction
         # First basic block : Conv layer (with 32 filters of 3x3) + MaxPool
