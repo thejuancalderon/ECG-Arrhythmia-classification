@@ -5,6 +5,8 @@ import gdown
 import os
 import datetime
 import importlib
+import wandb
+from wandb.keras import WandbCallback
 
 LABEL = "label"
 NORMAL = "N"
@@ -31,6 +33,9 @@ if __name__ == '__main__':
     parser.add_argument('--us_card', type=int, required=False, nargs='?', default=100000, const=100000, help='cardinality under sampling')
     parser.add_argument('--flag', type=str, required=False, nargs='?', default='all', const='all', help='flags: all, mtf, gaf, rp')
     parser.add_argument('--patience', type=int, required=False, nargs='?', default='50', const='50')
+    parser.add_argument('--wand_monitoring', type=str, required=False, nargs='?', default='n', const='n', help='flag y/n if you want to use wand to monito. It requires to have an account')
+    parser.add_argument('--wand_project_name', type=str, required=False, nargs='?', default='AppliedAI', const='AppliedAI', help='project name')
+    parser.add_argument('--wand_account', type=str, required=False, nargs='?', default='juancalderon', const='juancalderon')
     args = parser.parse_args()
 
 
@@ -77,20 +82,21 @@ if __name__ == '__main__':
 
     es_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy',patience=args.patience)  # The first run was with val loss
 
-    import wandb
-    from wandb.keras import WandbCallback
+    if(args.wand_monitoring == 'n'):
+        model.fit(x=training_generator, validation_data=validation_generator, epochs=100,
+                  callbacks=[es_callback, ck_callback])
 
-    wandb.init(project="AppliedAI", entity="juancalderon")
-    wandb.config = {
-        "learning_rate": args.lr,
-        "epochs": 100,
-        "batch_size": args.bs,
-        "custom":2
-    }
+    else:
+        wandb.init(project=args.wand_project_name, entity=args.wand_account)
+        wandb.config = {
+            "learning_rate": args.lr,
+            "epochs": 100,
+            "batch_size": args.bs,
+        }
 
-    # Train the model
-    model.fit(x=training_generator, validation_data=validation_generator, epochs=100,
-                        callbacks=[es_callback, ck_callback, WandbCallback()])
+        # Train the model
+        model.fit(x=training_generator, validation_data=validation_generator, epochs=100,
+                            callbacks=[es_callback, ck_callback, WandbCallback()])
 
 
 
