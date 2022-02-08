@@ -44,6 +44,7 @@ class ECGImageGenerator(tf.keras.utils.Sequence):
         mtf = np.expand_dims(mtf, axis=-1)
         rp = np.expand_dims(rp, axis=-1)
 
+
         # One hot encoding of the target
         current_y = self.one_hot_encoder.transform(np.array(current_y).reshape(-1, 1))
         if(self.flag == 'gaf'):
@@ -80,6 +81,17 @@ def create_MTF_images(data: pd.DataFrame = None, image_size=32, n_bins=3):
     images = mtf.transform(data)
     return images
 
+def normalize(images):
+    batch_size = images.shape[0]
+
+    for i in range(batch_size):
+        image = images[i]
+        min = np.min(image)
+        if(min < 0):
+            image = image - min
+
+        image = image / np.max(image)
+        images[i] = image
 
 def get_generators(file='dataset.csv', batch_size=512, test_size=0.2, seed=12,
                    undersampling_cardinality=100000,
