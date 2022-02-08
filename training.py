@@ -80,7 +80,7 @@ if __name__ == '__main__':
     import wandb
     from wandb.keras import WandbCallback
 
-    wandb.init(project="ECG-cnn", entity="AppliedAI")
+    wandb.init(project="AppliedAI", entity="juancalderon")
     wandb.config = {
         "learning_rate": args.lr,
         "epochs": 100,
