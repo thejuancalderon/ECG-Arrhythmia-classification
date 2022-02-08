@@ -29,6 +29,8 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, required=False, nargs='?', default='MNET2', const='MNET2', help='model name. Use the name of the class')
     parser.add_argument('--os_card', type=int, required=False, nargs='?', default=100000, const=100000, help='cardinality over sampling')
     parser.add_argument('--us_card', type=int, required=False, nargs='?', default=100000, const=100000, help='cardinality under sampling')
+    parser.add_argument('--flag', type=str, required=False, nargs='?', default='all', const='all', help='flags: all, mtf, gaf, rp')
+    parser.add_argument('--patience', type=int, required=False, nargs='?', default='50', const='50')
     args = parser.parse_args()
 
 
@@ -36,11 +38,17 @@ if __name__ == '__main__':
     if not os.path.isfile("dataset.csv"):
         gdown.download(id=ID, output=OUTPUT, quiet=False)
 
+    if(args.flag != 'all'):
+        channels = 1
+    else:
+        channels = 3
+
     # Get the generators
     training_generator, validation_generator = get_generators("dataset.csv",
                                                               oversampling_cardinality=args.os_card,
                                                               undersampling_cardinality=args.us_card,
-                                                              input_size=(args.img_size,args.img_size,3))
+                                                              input_size=(args.img_size,args.img_size,channels),
+                                                              flag=args.flag)
 
     # Get the model. We use the name from cmd to retrieve the correct class (using importlib to dynamically linked the class)
     #Import the module
@@ -48,7 +56,7 @@ if __name__ == '__main__':
     # Import the class
     model_class = getattr(module, args.model)
     # Use get_model function of the class to retrieve the model or the keras neural network
-    model = model_class.get_model(model_class, input_shape=(args.img_size,args.img_size,3), numbers_layers_to_freeze=args.layers_to_freeze)
+    model = model_class.get_model(model_class, input_shape=(args.img_size,args.img_size,channels), numbers_layers_to_freeze=args.layers_to_freeze)
 
     # Compile model
     model.compile(loss=tf.keras.losses.CategoricalCrossentropy(),
@@ -67,11 +75,22 @@ if __name__ == '__main__':
     tb_filepath = "drive/MyDrive/tensorboard"
     tb_callback = tf.keras.callbacks.TensorBoard(tb_filepath, update_freq=1)
 
-    es_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy',patience=50)  # The first run was with val loss
+    es_callback = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy',patience=args.patience)  # The first run was with val loss
+
+    import wandb
+    from wandb.keras import WandbCallback
+
+    wandb.init(project="ECG-cnn", entity="AppliedAI")
+    wandb.config = {
+        "learning_rate": args.lr,
+        "epochs": 100,
+        "batch_size": args.bs,
+        "custom":2
+    }
 
     # Train the model
     model.fit(x=training_generator, validation_data=validation_generator, epochs=100,
-                        callbacks=[es_callback, ck_callback])
+                        callbacks=[es_callback, ck_callback, WandbCallback()])
 
 
 
