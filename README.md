@@ -11,16 +11,23 @@ image-based CNN approach with generated images from the original ECG signal.
 
 ---
 ## Preprocessing
-n the beginning, it was decided to explore the given dataset and perform some basic pre-processing techniques. Each signal from the dataset has three files where one contains the 2-lead ECG signal and the other two are representing the R-peak positions and the beat annotations. The first step in the pre-processing was to downsample the signal with higher sampling frequency, i.e 250 Hz so as to unify all the signals to the same sampling frequency (180 Hz). The second step was to filter the signal keeping only the frequency range between 0.5 and 35 Hz. Since the problem was to label ECG beats, it was decided to split the signals into fixed-size beats, each containing 70 samples i.e. 35 samples before and after the R peak location. The next pre-processing step was to normalize all the beats so that they have the amplitude between -1 and 1. Finally, the dataset contained separated beats and their labels.<br>
-One of the problems that here was the the unbalanced dataset. Namely, the majority of beats were labeled as normal beat, i.e. classified with the label 'N'. Therefore, the SMOTE technique was used to prevent this, instead of cutting of the huge amount of normal beats. The SMOTE is an oversampling technique where the synthetic samples are generated for the minority class. It was decided to do the oversampling so that the new dataset has 100k ventricular (V) and super-ventricular (S) beats, and 300k normal (N) beats. It was applied only to the training data, while the test data remained unchanged so that it correctly represents the original data.
+Each signal from the dataset has three files where one contains the 2-lead ECG signal and the other two are representing the R-peak positions and the beat annotations. The first step was to downsample the signal with higher sampling frequency. The second step was to filter the signal keeping only the frequency range between 0.5 and 35 Hz. Since the problem was to label ECG beats, it was decided to split the signals into fixed-size beats, each containing 70 samples i.e. 35 samples before and after the R peak location.<br>
+
+<img src="images/orig_signal.png" alt="Snow" width="750"> 
+
+The majority of the beats were labeled as normal beat, i.e. classified with the label 'N'. Therefore, the SMOTE technique was used to prevent this, instead of cutting of the huge amount of normal beats. The SMOTE is an oversampling technique where the synthetic samples are generated for the minority class. It was applied only to the training data, while the test data remained unchanged so that it correctly represents the original data.
 
 
 ---
 ## Signal based approach  ##
 
-Based on the feature extractions approaches in literature, additional hand-crafted features were added to the data and fed to the classifier. It was suspected that the average HRV, its median and variance, along with average signal amplitude might provide useful information to the model and the first tests confirmed the assumptions. Later, two more features (logarithm of the current and the next RR distance) were added. All of the aforementioned features were then concatenated with the 70-sample beats.
+Based on the feature extractions approaches in literature, additional hand-crafted features were added to the data and fed to the classifier. The average HRV, its median and variance, along with average signal amplitude might provide useful information to the model. Later, two more features (logarithm of the current and the next RR distance) were added. All of the aforementioned features were then concatenated with the 70-sample beats.
 
-After a thorough investigation of the dataset, models capable of classifying the beats based on the input data we developed. In the first approach, following models were tested: the SVM, Random Forest, AdaBoost, Convolutional Neural Network using 1D convolutional layers, Recurrent Neural Networks using LSTM and Bi-directional LSTM layers, and finally, the ones that produced the best results, LightGBM models. All the model parameters were fine-tuned using GridSearch with a 3-fold cross-validation, which allowed to quickly verify in which direction to move in when developing the classifiers.
+In the first approach, following models were tested: the SVM, Random Forest, AdaBoost, Convolutional Neural Network using 1D convolutional layers, Recurrent Neural Networks using LSTM and Bi-directional LSTM layers, and finally, the ones that produced the best results, LightGBM models. 
+<table><tr>
+<td> <img src="images/conv1d.png" alt="Drawing" style="width: 450px;"/> </td>
+<td> <img src="images/lstm.png" alt="Drawing" style="width: 450px;"/> </td>
+</tr></table> 
 
 ---
 ## Image-based approach ##
@@ -30,6 +37,9 @@ We transform each heartbeat signal (previously split in the preprocessing) into 
 <img src="images/transformed_images.png" alt="Snow" width="350"> 
 
 We then concatenate the images in a 3 channel image. Finally we perform a classification task with a CNN (different types were tried) <br><br>
+
+Every transformation has its own peculiarities and it focuses on different parts of the signal. The idea of using all of them comes from the fact that multi-modal architectures often performs better with respect to using a single modality. They were concatenated in order to have an input as a three-channel image (the standard representation for RGB images). The convolutional neural network was used to extract the features and classify each beat. Different architectures were tried such as VGG, ResNet, Inception like architectures. The best model was a custom Inception base CNN that has 5 million parameters
+
 To see the transformation you can see this [notebook](https://github.com/calde97/ECG-Arrhythmia-classification/blob/master/notebooks/visualize_image_transformations.ipynb)
 <br>To see the performances this is the [notebook](https://github.com/calde97/ECG-Arrhythmia-classification/blob/master/notebooks/cnn-image-approach.ipynb)
 <br>To perform training run training.py or read this [notebook](https://github.com/calde97/ECG-Arrhythmia-classification/blob/master/notebooks/training_cnn_image_notebook.ipynb)
